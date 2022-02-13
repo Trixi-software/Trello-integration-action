@@ -129,7 +129,7 @@ async function handlePullRequestReview(data, actionType) {
 async function run() {
 
   try {
-    //console.log("Run context", context);
+    console.log("Run context", context);
     if (head_commit && head_commit.message) {
       handleHeadCommit(head_commit)
     }
