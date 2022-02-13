@@ -11246,7 +11246,7 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 const { context = {} } = _actions_github__WEBPACK_IMPORTED_MODULE_2__;
-const { pull_request, head_commit } = context.payload;
+const { pull_request, head_commit, pull_request_review } = context.payload;
 
 const CARD_ID_PATTERN = /^https:\/\/trello.com\/c\/([a-zA-Z0-9]{8})/g;
 const TRELLO_API_KEY = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput('trello-api-key', { required: true });
@@ -11353,12 +11353,31 @@ async function handlePullRequest(data, actionType) {
   
 }
 
+async function handlePullRequestReview(data, actionType) {
+  console.log("handlePullRequestReview", data, actionType);
+  if (actionType == "edited" || actionType == "dismissed") {
+    let card = await getCardID(data.pull_request.title);
+    if (card) {
+      // TODO add comment to issue
+      if ( TRELLO_BOARD_REOPEN_LIST_ID ) {
+        await moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
+        console.log(`Card with id ${card} was moved to reopened list with id ${TRELLO_BOARD_REOPEN_LIST_ID}`);
+      }
+    }
+  }
+  
+  
+}
+
 async function run() {
 
   try {
     //console.log("Run context", context);
     if (head_commit && head_commit.message) {
       handleHeadCommit(head_commit)
+    }
+    else if (pull_request_review) {
+      handlePullRequestReview(pull_request, context.payload.action)
     }
     else if (pull_request && pull_request.title) {
       handlePullRequest(pull_request, context.payload.action)
