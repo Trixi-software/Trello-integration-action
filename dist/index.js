@@ -11270,11 +11270,11 @@ function getCardID(message) {
   
 }
 
-async function isLinkAttachedToCard(card, link) {
+function isLinkAttachedToCard(card, link) {
   console.log(`isLinkAttachedToCard(${card}, ${link})`);
   let url = `https://api.trello.com/1/cards/${card}/attachments`;
 
-  return await axios__WEBPACK_IMPORTED_MODULE_0__.get(url, {
+  return axios__WEBPACK_IMPORTED_MODULE_0__.get(url, {
     params: {
       key: TRELLO_API_KEY,
       token: TRELLO_AUTH_TOKEN
@@ -11290,7 +11290,7 @@ async function isLinkAttachedToCard(card, link) {
 
 async function addAttachmentToCard(card, link) {
   console.log(`addAttachmentToCard(${card}, ${link})`);
-  if (isLinkAttachedToCard(card, link)) {
+  if (await isLinkAttachedToCard(card, link)) {
     // Don't want to duplicate link in card
     console.log(`Card with id ${card} has already attached this link ${link}`);
     return null;
