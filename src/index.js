@@ -37,6 +37,7 @@ async function isLinkAttachedToCard(card, link) {
       token: TRELLO_AUTH_TOKEN
     }
   }).then(response => {
+    console.log(`Response attachments for card ${card} is ${response}`);
     return response.data.findIndex(v => v.url === link) != -1;
   }).catch(error => {
     console.error(url, `Error ${error.response.status} ${error.response.statusText}`);
@@ -101,7 +102,7 @@ async function handlePullRequest(data, actionType) {
       await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID);
       console.log(`Card with id ${card} was moved to needs CR list with id ${TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID}`);
     }
-    else if (TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID && actionType == "closed" ) {
+    else if (TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID && actionType == "closed" && data.merged ) {
       await moveCardToList(card, TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID);
       console.log(`Card with id ${card} was moved to needs acceptation list with id ${TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID}`);
     }  
@@ -112,7 +113,7 @@ async function handlePullRequest(data, actionType) {
 async function run() {
 
   try {
-    console.log("Run context", context);
+    //console.log("Run context", context);
     if (head_commit && head_commit.message) {
       handleHeadCommit(head_commit)
     }
