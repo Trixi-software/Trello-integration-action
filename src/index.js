@@ -37,7 +37,7 @@ async function isLinkAttachedToCard(card, link) {
       token: TRELLO_AUTH_TOKEN
     }
   }).then(response => {
-    return response.data.findIndex(v => v.url === link) != -1;
+    return response.data.findIndex(v => v.url === link) == -1;
   }).catch(error => {
     console.error(url, `Error ${error.response.status} ${error.response.statusText}`);
     return false;
