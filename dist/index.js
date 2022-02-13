@@ -11291,6 +11291,7 @@ async function addAttachmentToCard(card, link) {
   console.log(`addAttachmentToCard(${card}, ${link})`);
   if (isLinkAttachedToCard(card, link)) {
     // Don't want to duplicate link in card
+    console.log(`Card with id ${card} has already attached this link ${link}`);
     return null;
   }
   let url = `https://api.trello.com/1/cards/${card}/attachments`;
@@ -11299,12 +11300,13 @@ async function addAttachmentToCard(card, link) {
     token: TRELLO_AUTH_TOKEN, 
     url: link
   }).then(response => {
+    console.log(`It was attached ${link} to card with id ${card}`)
     return response.status == 200;
   });
 }
 
-async function moveCardToList(board, card, listId) {
-  console.log(`moveCardToList(${board}, ${card}, ${listId})`);
+async function moveCardToList(card, listId) {
+  console.log(`moveCardToList(${card}, ${listId})`);
     let url = `https://api.trello.com/1/cards/${card}`;
     return await axios__WEBPACK_IMPORTED_MODULE_0__.put(url, {
       key: TRELLO_API_KEY,
@@ -11336,12 +11338,15 @@ async function handlePullRequest(data, actionType) {
     await addAttachmentToCard(card, url);
     if (TRELLO_BOARD_REOPEN_LIST_ID && actionType == "reopened" ) {
       await moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
+      console.log(`Card with id ${card} was moved to reopened list with id ${TRELLO_BOARD_REOPEN_LIST_ID}`);
     }
     else if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && actionType == "opened" ) {
-      await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID); 
+      await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID);
+      console.log(`Card with id ${card} was moved to needs CR list with id ${TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID}`);
     }
     else if (TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID && actionType == "closed" ) {
       await moveCardToList(card, TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID);
+      console.log(`Card with id ${card} was moved to needs acceptation list with id ${TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID}`);
     }  
   }
   
