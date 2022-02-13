@@ -28,13 +28,13 @@ function getCardID(message) {
 }
 
 async function isLinkAttachedToCard(card, link) {
-  console.log(`isPullRequestAttachedToCard(${card}, ${link})`);
+  console.log(`isLinkAttachedToCard(${card}, ${link})`);
   let url = `https://api.trello.com/1/cards/${card}/attachments`;
 
   return await axios.get(url, {
     params: {
-      key: trelloApiKey,
-      token: trelloAuthToken
+      key: TRELLO_API_KEY,
+      token: TRELLO_AUTH_TOKEN
     }
   }).then(response => {
     return response.data.findIndex(v => v.url === link) != -1;
