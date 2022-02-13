@@ -15,12 +15,14 @@ const TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID = core.getInput('trello-board-needs
 function getCardID(message) {
   console.log(`getCardID(${message})`);
   if (CARD_ID_PATTERN.test(message)) {
+      CARD_ID_PATTERN.lastIndex=0;
       let cardId = CARD_ID_PATTERN.exec(message)[1];
       console.log(`Unique card's ID is ${cardId}`);
       return cardId;  
   }
   else {
-    throw new Error(`Message ${message} doesn't begin on card's short link`);
+    console.log(`Message ${message} doesn't begin on card's short link`);
+    return null;
   }
   
 }
@@ -76,7 +78,9 @@ async function handleHeadCommit(data) {
   let message = data.message;
   let user = data.author.name;
   let card = await getCardID(message);
-  await addAttachmentToCard(card, url);
+  if (card) {
+    await addAttachmentToCard(card, url);
+  }
 }
 
 async function handlePullRequest(data, actionType) {
@@ -85,16 +89,19 @@ async function handlePullRequest(data, actionType) {
   let message = data.title;
   let user = data.user.name;
   let card = await getCardID(message);
-  await addAttachmentToCard(card, url);
-  if (TRELLO_BOARD_REOPEN_LIST_ID && actionType == "reopened" ) {
-      moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
+  if (card) {
+    await addAttachmentToCard(card, url);
+    if (TRELLO_BOARD_REOPEN_LIST_ID && actionType == "reopened" ) {
+      await moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
+    }
+    else if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && actionType == "opened" ) {
+      await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID); 
+    }
+    else if (TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID && actionType == "closed" ) {
+      await moveCardToList(card, TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID);
+    }  
   }
-  else if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && actionType == "opened" ) {
-      moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID); 
-  }
-  else if (TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID && actionType == "closed" ) {
-      moveCardToList(card, TRELLO_BOARD_NEEDS_ACCEPTATION_LIST_ID);
-  }
+  
 }
 
 async function run() {
