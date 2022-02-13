@@ -105,7 +105,7 @@ async function run() {
       handleHeadCommit(head_commit)
     }
     else if (pull_request && pull_request.title) {
-      handlePullRequest(pull_request, context.action)
+      handlePullRequest(pull_request, context.payload.action)
     }
   }
   catch (error) {
