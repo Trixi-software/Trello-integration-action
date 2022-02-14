@@ -3,7 +3,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 const { context = {} } = github;
-const { pull_request, head_commit, pull_request_review } = context.payload;
+const { pull_request, head_commit, review } = context.payload;
 
 const CARD_ID_PATTERN = /^https:\/\/trello.com\/c\/([a-zA-Z0-9]{8})/g;
 const TRELLO_API_KEY = core.getInput('trello-api-key', { required: true });
@@ -86,7 +86,7 @@ async function handleHeadCommit(data) {
   }
 }
 
-async function handlePullRequest(data, actionType) {
+async function handlePullRequest(review, pull_request, actionType) {
   console.log("handlePullRequest", data, actionType);
   let url = data.html_url || data.url;
   let message = data.title;
@@ -94,11 +94,7 @@ async function handlePullRequest(data, actionType) {
   let card = await getCardID(message);
   if (card) {
     await addAttachmentToCard(card, url);
-    if (TRELLO_BOARD_REOPEN_LIST_ID && actionType == "reopened" ) {
-      await moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
-      console.log(`Card with id ${card} was moved to reopened list with id ${TRELLO_BOARD_REOPEN_LIST_ID}`);
-    }
-    else if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && actionType == "opened" ) {
+    if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && ( actionType == "opened" || actionType == "reopened" ) ) {
       await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID);
       console.log(`Card with id ${card} was moved to needs CR list with id ${TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID}`);
     }
@@ -110,12 +106,12 @@ async function handlePullRequest(data, actionType) {
   
 }
 
-async function handlePullRequestReview(data, actionType) {
-  console.log("handlePullRequestReview", data, actionType);
+async function handlePullRequestReview(review, pull_request, actionType) {
+  console.log("handlePullRequestReview", review, pull_request, actionType);
   if (actionType == "edited" || actionType == "dismissed") {
-    let card = await getCardID(data.pull_request.title);
+    let card = await getCardID(pull_request.title);
     if (card) {
-      // TODO add comment to issue
+      // TODO add comment to issue review.body
       if ( TRELLO_BOARD_REOPEN_LIST_ID ) {
         await moveCardToList(card, TRELLO_BOARD_REOPEN_LIST_ID);
         console.log(`Card with id ${card} was moved to reopened list with id ${TRELLO_BOARD_REOPEN_LIST_ID}`);
@@ -133,8 +129,8 @@ async function run() {
     if (head_commit && head_commit.message) {
       handleHeadCommit(head_commit)
     }
-    else if (pull_request_review) {
-      handlePullRequestReview(pull_request, context.payload.action)
+    else if (review && pull_request) {
+      handlePullRequestReview(review, pull_request, context.payload.action)
     }
     else if (pull_request && pull_request.title) {
       handlePullRequest(pull_request, context.payload.action)
