@@ -86,7 +86,7 @@ async function handleHeadCommit(data) {
   }
 }
 
-async function handlePullRequest(review, pull_request, actionType) {
+async function handlePullRequest(data, actionType) {
   console.log("handlePullRequest", data, actionType);
   let url = data.html_url || data.url;
   let message = data.title;
@@ -94,7 +94,7 @@ async function handlePullRequest(review, pull_request, actionType) {
   let card = await getCardID(message);
   if (card) {
     await addAttachmentToCard(card, url);
-    if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && ( actionType == "opened" || actionType == "reopened" ) ) {
+    if (TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID && ( actionType == "opened" || actionType == "review_requested" ) ) {
       await moveCardToList(card, TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID);
       console.log(`Card with id ${card} was moved to needs CR list with id ${TRELLO_BOARD_NEEDS_CODE_REVIEW_LIST_ID}`);
     }
